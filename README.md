@@ -18,7 +18,18 @@ If you close the terminal you can get back to it with the following command:
 wsl -d Ubuntu-22.04
 ```
 
-Install Ubuntu dependencies:
+You will also want install usb support for WSL. In a separate windows command
+prompt, while wsl is running in the original command prompt, run the following
+commands to download usb support and attach the usb to WSL:
+
+```cmd
+winget install usbipd
+usbipd list
+usbipd bind --busid <busid>
+usbipd attach --wsl --busid <busid> --auto-attach
+```
+
+Back in the wsl shell install Ubuntu dependencies:
 
 ```sh
 sudo apt update
@@ -44,22 +55,44 @@ source venv/bin/activate
 pip install west
 ```
 
-Pull in Zephyr and modules and install SDK:
+Pull in Zephyr and modules:
 
 ```sh
 west update
 west zephyr-export
 west packages pip --install
-west sdk install
 ```
 
-Build and flash application:
+Install SDK:
 
 ```sh
-cd app
-west build -p
-west flash # not tested
+cd
+wget https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.17.4/zephyr-sdk-0.17.4_linux-x86_64_minimal.tar.xz
+tar vxf zephyr-sdk-0.17.4_linux-x86_64_minimal.tar.xz
+cd zephyr-sdk-0.17.4
+./setup.sh -t arm-zephyr-eabi
 ```
+
+To build the blinky app:
+
+```sh
+cd ~/zephyr-nrf52833dk/app
+west build -p
+```
+
+To build the bluetooth app:
+
+```sh
+cd ~/zephyr-nrf52833dk/bluetooth-app
+west build -p
+```
+
+Now you can flash with:
+
+```sh
+west flash
+```
+This will require you to have connected the USB to the wsl instance.
 
 After closing your Linux terminal you will need to re-source your virtual
 environment to get access to `west` again:
